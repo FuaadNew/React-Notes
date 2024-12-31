@@ -4,10 +4,13 @@ import Note from './components/Note'
 import noteService from './services/notes'
 
 
+
+
 const App = ( ) => {
   const [notes,setNotes] = useState([])
   const [newNote,setNewNote] = useState('')
   const [showAll,setShowAll] = useState(false)
+  const [errorMessage,setErrorMessage] = useState('some error happened...')
 
   const toggleImportanceOf = (id) => {
     const url = `http://localhost:3001/notes/${id}`
@@ -15,6 +18,13 @@ const App = ( ) => {
     const changedNote = {...note, important: !note.important}
     noteService.update(id,changedNote).then(returnedNote =>{
       setNotes(notes.map(note => note.id === id ? returnedNote: note))
+
+    }).catch(error=>{
+      setErrorMessage(`Note ${note.content} was already removed from server`)
+      setTimeout(()=>{
+        setErrorMessage(null)
+      },5000)
+      setNotes(notes.filter(n=> n.id != id))
 
     })
     console.log(`importance of ${id} needs to be toggled`)
@@ -30,6 +40,34 @@ const App = ( ) => {
     })
   },[])
 
+
+
+
+  const Footer = () => {
+    const footerStlye = {
+        color: 'green',
+        fontStlye: 'italic',
+        fontSize: 16
+      }
+      return (
+        <div style={footerStlye}>
+          <br />
+          <em> Note app, Department of Computer Science, University of Helsinki 2024</em>
+        </div>
+      )
+    }
+    
+  
+
+  const Notification = ({message}) =>{
+    if (message === null){
+      return null
+    }
+    return (
+      <div className="error">{message}</div>
+    )
+
+  }
   
   console.log('render',notes.length,'notes')
 
@@ -56,6 +94,7 @@ const App = ( ) => {
   return (
     <div>
       <h1>Notes</h1>
+      <Notification message={errorMessage}></Notification>
       <button onClick={()=>setShowAll(!showAll)}>
         show {showAll ? 'important': 'all'}
       </button>
@@ -72,6 +111,7 @@ const App = ( ) => {
       <button type='submit'>save</button>
       
     </form>
+    <Footer/>
     </div>
   )
 }
